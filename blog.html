@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How to Secure a Linux Server from Scratch</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Georgia, 'Times New Roman', serif;
+      background: #f9f9f9;
+      color: #292929;
+      line-height: 1.8;
+    }
+
+    header {
+      background: #fff;
+      border-bottom: 1px solid #e6e6e6;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    header span {
+      font-family: sans-serif;
+      font-size: 13px;
+      color: #757575;
+    }
+
+    header .tag {
+      background: #f0f0f0;
+      border-radius: 20px;
+      padding: 3px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #555;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 48px auto;
+      padding: 0 24px 80px;
+    }
+
+    .meta {
+      font-family: sans-serif;
+      font-size: 13px;
+      color: #9e9e9e;
+      margin-bottom: 28px;
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    h1 {
+      font-size: 36px;
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: -0.5px;
+      margin-bottom: 16px;
+      color: #111;
+    }
+
+    .subtitle {
+      font-size: 19px;
+      color: #555;
+      font-style: italic;
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid #e8e8e8;
+      margin: 36px 0;
+    }
+
+    h2 {
+      font-family: sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      margin: 44px 0 14px;
+      color: #111;
+      padding-left: 14px;
+      border-left: 4px solid #6366f1;
+    }
+
+    p {
+      font-size: 18px;
+      margin-bottom: 20px;
+      color: #292929;
+    }
+
+    strong { color: #111; }
+
+    code:not(pre code) {
+      background: #f0edff;
+      color: #5b21b6;
+      font-family: 'Fira Code', 'Courier New', monospace;
+      font-size: 14px;
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+
+    pre {
+      margin: 20px 0;
+      border-radius: 10px;
+      overflow-x: auto;
+      font-size: 14px;
+      line-height: 1.65;
+      border: 1px solid #2d2d2d;
+    }
+
+    pre code {
+      font-family: 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
+    }
+
+    blockquote {
+      border-left: 4px solid #f59e0b;
+      background: #fffbeb;
+      padding: 14px 20px;
+      border-radius: 0 8px 8px 0;
+      color: #78350f;
+      font-style: italic;
+      margin: 24px 0;
+      font-size: 16px;
+    }
+
+    ul.checklist {
+      list-style: none;
+      background: #fafafa;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin: 20px 0;
+    }
+
+    ul.checklist li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 7px 0;
+      font-size: 16px;
+      color: #374151;
+      font-family: sans-serif;
+    }
+
+    ul.checklist li::before {
+      content: '';
+      width: 18px;
+      height: 18px;
+      border: 2px solid #6366f1;
+      border-radius: 4px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    ul.plain {
+      padding-left: 24px;
+      margin: 16px 0 20px;
+    }
+
+    ul.plain li {
+      font-size: 17px;
+      margin-bottom: 10px;
+      color: #374151;
+    }
+
+    .step-label {
+      display: inline-block;
+      background: #6366f1;
+      color: #fff;
+      font-family: sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 10px;
+      border-radius: 12px;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    footer {
+      text-align: center;
+      font-family: sans-serif;
+      font-size: 13px;
+      color: #aaa;
+      padding: 40px 0 20px;
+      border-top: 1px solid #e8e8e8;
+      margin-top: 60px;
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 26px; }
+      p, pre { font-size: 16px; }
+      .container { padding: 0 16px 60px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <span class="tag">Security</span>
+  <span class="tag">Linux</span>
+  <span class="tag">Networking</span>
+  <span style="margin-left: auto;">⏱ 8 min read</span>
+</header>
+
+<div class="container">
+
+  <h1>How to Secure a Linux Server from Scratch: SSH, Firewall, and Fail2Ban</h1>
+  <p class="subtitle">A practical walkthrough of the steps I apply to every new server before it does anything else.</p>
+
+  <div class="meta">
+    <span>🔒 Server Hardening</span>
+    <span>🐧 Ubuntu / Debian</span>
+    <span>🌐 CCNA · Security+ · LPIC-1</span>
+  </div>
+
+  <hr>
+
+  <p>I want to start this with something that actually happened to me.</p>
+  <p>I spun up a VPS, installed Ubuntu, and left it running while I worked on something else. Six hours later I opened the auth.log out of curiosity.</p>
+  <p><strong>Over 400 failed SSH login attempts.</strong></p>
+  <p>The server was less than a day old. Nobody knew its IP. Didn't matter — automated scanners don't need to know you exist, they sweep everything. That was the moment the theory from my Security+ prep stopped being abstract.</p>
+  <p>This tutorial walks through the steps I now apply to every new Linux server before it does anything else. Nothing fancy — just the fundamentals that actually matter.</p>
+
+  <hr>
+
+  <h2>What You'll Need</h2>
+  <ul class="plain">
+    <li>A Linux server (Ubuntu 20.04/22.04 or Debian) — local VM or VPS both work</li>
+    <li>Root or sudo access</li>
+    <li>A local machine to SSH from</li>
+  </ul>
+
+  <hr>
+
+  <span class="step-label">STEP 1</span>
+  <h2>Update Before Anything Else</h2>
+  <p>I know this sounds obvious. Do it anyway.</p>
+  <pre><code class="language-bash">sudo apt update && sudo apt upgrade -y</code></pre>
+  <p>Running hardening steps on an unpatched system is like putting a deadbolt on a rotten door. Patches first, configuration second.</p>
+
+  <hr>
+
+  <span class="step-label">STEP 2</span>
+  <h2>Create a Non-Root Admin User</h2>
+  <p>Root has total control over your system. That's both its strength and its problem — one bad command, one compromised session, and there are no guardrails.</p>
+  <p>This comes directly from the principle of least privilege. If you've done Security+, you know this concept well. Accounts should only have access to what they actually need.</p>
+  <pre><code class="language-bash">adduser secadmin
+usermod -aG sudo secadmin</code></pre>
+  <p>Switch to this user and don't go back to root unless you have a specific reason. If you're coming from a Windows/MCSE background, think of this like separating your Domain Admin account from your daily-use account. Same concept, different OS.</p>
+
+  <hr>
+
+  <span class="step-label">STEP 3</span>
+  <h2>Harden SSH — This Is the Important One</h2>
+  <p>SSH defaults to port 22. It's in every scanner's default list. It was in my CCNA material, it's in every attacker's playbook, and it's the first thing automated bots check.</p>
+  <p>Changing the port isn't a real security measure by itself — security through obscurity isn't a defense. But combined with everything else here, it eliminates a huge amount of automated noise.</p>
+  <pre><code class="language-bash">sudo nano /etc/ssh/sshd_config</code></pre>
+  <p>Find and update these lines (some may need to be uncommented):</p>
+  <pre><code class="language-bash">Port 2222
+PermitRootLogin no
+PasswordAuthentication no
+MaxAuthTries 3
+LoginGraceTime 30</code></pre>
+  <p>Why each one matters:</p>
+  <ul class="plain">
+    <li><strong>Port 2222</strong> — moves you off the default target. Eliminates most automated scanning traffic.</li>
+    <li><strong>PermitRootLogin no</strong> — even if someone gets the root password, they can't log in directly.</li>
+    <li><strong>PasswordAuthentication no</strong> — once key-based auth is set up, passwords become irrelevant. Remove the vector entirely.</li>
+    <li><strong>MaxAuthTries 3</strong> — limits guesses per connection. Combined with Fail2Ban, this gets aggressive fast.</li>
+    <li><strong>LoginGraceTime 30</strong> — default is 120 seconds. That's generous to bots. 30 is enough.</li>
+  </ul>
+  <pre><code class="language-bash">sudo systemctl restart sshd</code></pre>
+  <blockquote>Before closing your current session, open a second terminal and test the new port. This is the mistake everyone makes once.</blockquote>
+
+  <hr>
+
+  <span class="step-label">STEP 4</span>
+  <h2>Set Up SSH Key Authentication</h2>
+  <p>From your local machine:</p>
+  <pre><code class="language-bash">ssh-keygen -t ed25519 -C "server-label"
+ssh-copy-id -p 2222 secadmin@your_server_ip</code></pre>
+  <p>Why Ed25519 over RSA? It uses elliptic curve cryptography, produces smaller keys, verifies faster, and is harder to brute force. LPIC-1 covers SSH basics but this detail is worth knowing beyond the exam.</p>
+  <p>Once key login is confirmed working, the <code>PasswordAuthentication no</code> setting kicks in and passwords are permanently off.</p>
+
+  <hr>
+
+  <span class="step-label">STEP 5</span>
+  <h2>Configure the Firewall</h2>
+  <p>UFW is a readable front-end for iptables. If you've done CCNA or worked with Cisco ACLs, the logic is identical: default deny, explicit permit only for what's needed.</p>
+  <pre><code class="language-bash">sudo apt install ufw
+
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+
+sudo ufw allow 2222/tcp
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+
+sudo ufw enable</code></pre>
+  <pre><code class="language-bash">sudo ufw status verbose</code></pre>
+  <p>If a port isn't listed, it's blocked. That's the goal.</p>
+
+  <hr>
+
+  <span class="step-label">STEP 6</span>
+  <h2>Install Fail2Ban</h2>
+  <p>UFW controls what traffic reaches your server. Fail2Ban handles traffic that gets through and then misbehaves.</p>
+  <pre><code class="language-bash">sudo apt install fail2ban
+sudo cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+sudo nano /etc/fail2ban/jail.local</code></pre>
+  <p>Find the <code>[sshd]</code> section and configure it:</p>
+  <pre><code class="language-ini">[sshd]
+enabled  = true
+port     = 2222
+maxretry = 3
+bantime  = 3600
+findtime = 600</code></pre>
+  <p>3 failed attempts within 10 minutes = banned for 1 hour. Set <code>bantime</code> to <code>86400</code> if you want to be less forgiving.</p>
+  <pre><code class="language-bash">sudo systemctl enable fail2ban
+sudo systemctl start fail2ban
+sudo fail2ban-client status sshd</code></pre>
+  <p>First time I ran this on a live server, there were 9 IPs banned within two hours. Completely normal.</p>
+
+  <hr>
+
+  <span class="step-label">STEP 7</span>
+  <h2>Enable Automatic Security Updates</h2>
+  <p>Manual patching is easy to forget. Automate the critical stuff:</p>
+  <pre><code class="language-bash">sudo apt install unattended-upgrades
+sudo dpkg-reconfigure --priority=low unattended-upgrades</code></pre>
+  <p>This handles security patches only — it won't auto-update application packages and break things.</p>
+
+  <hr>
+
+  <h2>Quick Verification Checklist</h2>
+  <ul class="checklist">
+    <li>System fully updated</li>
+    <li>Non-root admin account created and tested</li>
+    <li>SSH moved off port 22, root login disabled</li>
+    <li>Key-based authentication confirmed working</li>
+    <li>Password authentication disabled</li>
+    <li>UFW active — verify: <code>sudo ufw status</code></li>
+    <li>Fail2Ban running — verify: <code>sudo systemctl status fail2ban</code></li>
+    <li>Automatic security updates enabled</li>
+  </ul>
+
+  <hr>
+
+  <h2>What This Doesn't Cover</h2>
+  <p>This is a baseline, not a complete security posture. Depending on what your server runs, also look at:</p>
+  <ul class="plain">
+    <li><strong>AppArmor or SELinux</strong> — mandatory access control</li>
+    <li><strong>auditd</strong> — detailed system call logging</li>
+    <li><strong>Lynis</strong> — run it and read what it finds</li>
+    <li><strong>Regular log reviews</strong> — the logs will tell you things if you read them</li>
+  </ul>
+  <p>The certifications give you the framework. The logs give you the reality check.</p>
+  <p>If you run into issues applying any of this to your setup, drop it in the comments.</p>
+
+  <footer>
+    Written about Linux server security · SSH · UFW · Fail2Ban
+  </footer>
+
+</div>
+
+<script>hljs.highlightAll();</script>
+</body>
+</html>
